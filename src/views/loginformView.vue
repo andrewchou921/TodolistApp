@@ -4,7 +4,7 @@ import { onMounted, ref } from 'vue';
 
 const api = 'https://todolist-api.hexschool.io';
 
-// 定義用來註冊的ref 變數嗎
+// 定義用來註冊的 ref 變數
 const signupField = ref({
   email: '',
   password: '',
@@ -15,19 +15,29 @@ const signupRes = ref('');
 
 // 註冊方法
 const signup = async () => {
-  console.log(`${api}/users/sign_up`);
+  // 檢查密碼和確認密碼是否一致
+  if (signupField.value.password !== signupField.value.passwordConfirm) {
+    console.error('密碼和確認密碼不一致');
+    return;
+  }
 
   try {
     const res = await axios.post(`${api}/users/sign_up`, signupField.value);
     console.log(res);
     signupRes.value = res.data.uid;
-    window.location.href = '#todoListPage'; // 或者使用 Vue Router 進行跳轉
+    
+    // 註冊成功後，直接取得 token 並保存到 cookie 中
+    const tokenRes = await axios.post(`${api}/users/sign_in`, {
+      email: signupField.value.email,
+      password: signupField.value.password
+    });
+    document.cookie = `customTodoToken=${tokenRes.data.token}; path=/; secure; samesite=strict`;
   } catch (error) {
-    console.error('註冊失敗:', error);
+    console.error('註冊失敗:', error.response ? error.response.data : error.message);
   }
 };
 
-// 定義用來登入的ref 變數嗎
+// 定義用來登入的 ref 變數
 const signInField = ref({
   email: '',
   password: ''
@@ -36,16 +46,13 @@ const signInRes = ref('');
 
 // 登入方法
 const signIn = async () => {
-  console.log(`${api}/users/sign_in`);
-
   try {
     const res = await axios.post(`${api}/users/sign_in`, signInField.value);
     console.log(res);
     signInRes.value = res.data.token;
 
+    // 保存 token 到 cookie 中
     document.cookie = `customTodoToken=${res.data.token}; path=/; secure; samesite=strict`;
-
-    window.location.href = '#todoListPage'; // 或者使用 Vue Router 進行跳轉
   } catch (error) {
     console.error('登入失敗:', error);
   }
@@ -58,10 +65,9 @@ const user = ref({
 });
 onMounted(async () => {
   const token = document.cookie.replace(/(?:(?:^|.*;\s*)customTodoToken\s*\=\s*([^;]*).*$)|^.*$/, '$1');
-  console.log(token);
   try {
     const res = await axios.get(`${api}/users/checkout`, {
-      headers: { Authorization: token }
+      headers: { Authorization: `Bearer ${token}` }
     });
     console.log(res);
     user.value = res.data;
@@ -70,9 +76,6 @@ onMounted(async () => {
   }
 });
 </script>
-
-
-
 
 
 <template>
@@ -100,8 +103,7 @@ onMounted(async () => {
   </div>
 </div>
 
-
-  <!-- 註冊表單-->
+<!-- 註冊表單-->
 <div id="signUpPage" class="bg-yellow">
   <div class="container signUpPage vhContainer">
     <div class="side">
@@ -118,7 +120,7 @@ onMounted(async () => {
         <label class="formControls_label" for="password">密碼</label>
         <input class="formControls_input" type="password" id="password" name="password" placeholder="請輸入密碼" required v-model="signupField.password"/>
         <label class="formControls_label" for="passwordConfirm">再次輸入密碼</label>
-        <input class="formControls_input" type="password" id="passwordConfirm" name="passwordConfirm" placeholder="請再次輸入密碼" required/>
+        <input class="formControls_input" type="password" id="passwordConfirm" name="passwordConfirm" placeholder="請再次輸入密碼" required v-model="signupField.passwordConfirm"/>
         <input class="formControls_btnSubmit" type="submit" value="註冊帳號"/>
         <a class="formControls_btnLink" href="#loginPage">登入</a>
       </form>
@@ -126,8 +128,7 @@ onMounted(async () => {
   </div>
 </div>
 
-
-  <!-- 代辦事項頁面 -->
+<!-- 代辦事項頁面 -->
 <div id="todoListPage" class="bg-half">
   <nav>
     <h1><a href="#">ONLINE TODO LIST</a></h1>
@@ -166,6 +167,7 @@ onMounted(async () => {
 </div>
 
 </template>
+
 
 <style>
 @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+TC&display=swap");
