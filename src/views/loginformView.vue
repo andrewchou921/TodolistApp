@@ -37,6 +37,12 @@ const signup = async () => {
   }
 };
 
+
+// 定義用來登入的 ref 變數
+const signInField = <<<<<<< HEAD
+=======
+
+>>>>>>> d4ba487 (Initial commit)
 // 定義用來登入的 ref 變數
 const signInField = ref({
   email: '',
@@ -67,7 +73,9 @@ onMounted(async () => {
   const token = document.cookie.replace(/(?:(?:^|.*;\s*)customTodoToken\s*\=\s*([^;]*).*$)|^.*$/, '$1');
   try {
     const res = await axios.get(`${api}/users/checkout`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: {
+         Authorization: `Bearer ${token}`
+         }
     });
     console.log(res);
     user.value = res.data;
@@ -90,7 +98,7 @@ onMounted(async () => {
     </div>
     <div>
       <form class="formControls" @submit.prevent="signIn">
-        <h2 class="formControls_txt">最實用的線上代辦事項服務</h2>
+        <h2 class="formControls_txt .text-color">最實用的線上代辦事項服務</h2>
         <label class="formControls_label" for="email">Email</label>
         <input class="formControls_input" type="text" id="email" name="email" placeholder="請輸入 email" required v-model="signInField.email"/>
         <span>此欄位不可留空</span>
@@ -192,6 +200,11 @@ time, mark, audio, video {
   vertical-align: baseline;
 }
 
+
+.text-color{
+  color: white;
+}
+
 /* HTML5 display-role reset for older browsers */
 article, aside, details, figcaption, figure,
 footer, header, hgroup, menu, nav, section {
@@ -261,30 +274,12 @@ img {
 }
 
 .bg-yellow {
-  background-color: #FFD370;
+  background-color: #06C655;
 }
 
 .bg-half {
-  background-image: linear-gradient(175deg, #FFD370 60%, #fff 40%);
-}
-
-.container {
-  margin: 0 auto;
-  padding: 87px 32px;
-}
-
-@media (max-width: 576px) {
-  .container {
-    padding: 18px 32px;
-  }
-}
-
-.side {
-  width: 386px;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
+  background-image: linear-gradient(175deg, #06C655 60%, #fff 40%);
+n: column;
   -webkit-box-pack: center;
       -ms-flex-pack: center;
           justify-content: center;
