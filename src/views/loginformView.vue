@@ -38,17 +38,14 @@ const signup = async () => {
 };
 
 
-// 定義用來登入的 ref 變數
-const signInField = <<<<<<< HEAD
-=======
 
->>>>>>> d4ba487 (Initial commit)
 // 定義用來登入的 ref 變數
 const signInField = ref({
   email: '',
   password: ''
 });
 const signInRes = ref('');
+
 
 // 登入方法
 const signIn = async () => {
@@ -89,7 +86,7 @@ onMounted(async () => {
 <template>
 <!-- 登入表單 -->
 <div id="loginPage" class="bg-yellow">
-  <div class="container loginPage vhContainer">
+  <div class="container  loginPage vhContainer">
     <div class="side">
       <a href="#">
         <img class="logoImg" src="https://raw.githubusercontent.com/hexschool/2022-web-layout-training/main/todolist/logo.png" alt=""/>
@@ -98,7 +95,7 @@ onMounted(async () => {
     </div>
     <div>
       <form class="formControls" @submit.prevent="signIn">
-        <h2 class="formControls_txt .text-color">最實用的線上代辦事項服務</h2>
+        <h2 class="formControls_txt">最實用的線上代辦事項服務</h2>
         <label class="formControls_label" for="email">Email</label>
         <input class="formControls_input" type="text" id="email" name="email" placeholder="請輸入 email" required v-model="signInField.email"/>
         <span>此欄位不可留空</span>
@@ -176,7 +173,6 @@ onMounted(async () => {
 
 </template>
 
-
 <style>
 @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+TC&display=swap");
 html, body, div, span, applet, object, iframe,
@@ -213,6 +209,17 @@ footer, header, hgroup, menu, nav, section {
 
 body {
   line-height: 1;
+}
+
+.container  {
+  margin: 0 auto;
+  padding: 87px 32px;
+}
+
+@media (max-width: 576px) {
+  .container  {
+    padding: 18px 32px;
+  }
 }
 
 ol, ul {
