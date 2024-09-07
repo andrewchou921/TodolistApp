@@ -45,96 +45,96 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import axios from 'axios';
 import { onMounted, ref, computed } from 'vue';
 import { useRouter } from 'vue-router'; // 引入 router
 
-const router = useRouter(); // 使用 useRouter
 const api = 'https://todolist-api.hexschool.io';
 
-export default {
-  setup() {
-    // 用戶資訊
-    const user = ref({ nickname: '', uid: '', token: '' });
+// 用戶資訊
+const user = ref({ nickname: '', uid: '', token: '' });
 
-    // 驗證登入狀態
-    onMounted(async () => {
-      const token = document.cookie.replace(/(?:(?:^|.*;\s*)customTodoToken\s*\=\s*([^;]*).*$)|^.*$/, '$1');
-      if (token) {
-        try {
-          const res = await axios.get(`${api}/users/checkout`, {
-            headers: { Authorization: token }
-          });
-          user.value = res.data;
-          user.value.token = token;
-          console.log('登入成功:', user.value); // 打印成功信息
-          getTodos(); // 取得待辦事項
-        } catch (error) {
-          console.error('用戶驗證失敗:', error);
-          document.cookie = 'customTodoToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-          window.location.href = '/login';
-        }
-      } else {
-        window.location.href = '/login';
-      }
-    });
+const router = useRouter(); // 使用 useRouter,一定要放在 setup 裡
 
-    // 登出功能
-    async function logout() {
-      try {
-        // 清空用戶資訊和 token
-        user.value = { nickname: '', uid: '', token: '' };
-        alert('您已登出');
-        // 重定向到登入頁面
-        window.location.href = '/login';
-      } catch (error) {
-        console.error('登出失敗:', error);
-      }
+// 驗證登入狀態
+onMounted(async () => {
+  const token = document.cookie.replace(/(?:(?:^|.*;\s*)customTodoToken\s*\=\s*([^;]*).*$)|^.*$/, '$1');
+  if (token) {
+    try {
+      const res = await axios.get(`${api}/users/checkout`, {
+        headers: { Authorization: token }
+      });
+      user.value = res.data;
+      user.value.token = token;
+      console.log('登入成功:', user.value); // 打印成功信息
+      getTodos(); // 取得待辦事項
+    } catch (error) {
+      console.error('用戶驗證失敗:', error);
+      document.cookie = 'customTodoToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      // 使用 router.push 來跳轉頁面
+      router.push('/login');
     }
+  } else {
+    window.location.href = '/login';
+  }
+});
 
-    // 當前待辦事項
-    const todos = ref([]);
-    const newTodoContent = ref('');
-    const currentTab = ref('all');
-    const edittingTodo = ref(null);
-    const edittingContent = ref('');
+// 登出功能
+async function logout() {
+  try {
+    // 清空用戶資訊和 token
+    user.value = { nickname: '', uid: '', token: '' };
+    alert('您已登出');
+    // 使用 router.push 來跳轉頁面
+    router.push('/login');
+  } catch (error) {
+    console.error('登出失敗:', error);
+  }
+}
 
-    // 篩選待辦事項
-    const filteredTodos = computed(() => {
-      if (currentTab.value === 'todo') {
-        return todos.value.filter(todo => !todo.status);
-      } else if (currentTab.value === 'done') {
-        return todos.value.filter(todo => todo.status);
-      } else {
-        return todos.value;
-      }
+// 當前待辦事項
+const todos = ref([]);
+const newTodoContent = ref('');
+const currentTab = ref('all');
+const edittingTodo = ref(null);
+const edittingContent = ref('');
+
+// 篩選待辦事項
+const filteredTodos = computed(() => {
+  if (currentTab.value === 'todo') {
+    return todos.value.filter(todo => !todo.status);
+  } else if (currentTab.value === 'done') {
+    return todos.value.filter(todo => todo.status);
+  } else {
+    return todos.value;
+  }
+});
+
+// 計算未完成的待辦事項數量
+const todoCount = computed(() => {
+  return todos.value.filter(todo => !todo.status).length;
+});
+
+// 切換分頁
+const switchTab = (tab) => {
+  currentTab.value = tab;
+};
+
+// 取得待辦事項
+async function getTodos() {
+  try {
+    const { data } = await axios.get(`${api}/todos`, {
+      headers: { Authorization: `${user.value.token}` }
     });
+    todos.value = data.data;
+  } catch (error) {
+    console.error('取得待辦事項失敗:', error);
+  }
+}
 
-    // 計算未完成的待辦事項數量
-    const todoCount = computed(() => {
-      return todos.value.filter(todo => !todo.status).length;
-    });
-
-    // 切換分頁
-    const switchTab = (tab) => {
-      currentTab.value = tab;
-    };
-
-    // 取得待辦事項
-    async function getTodos() {
-      try {
-        const { data } = await axios.get(`${api}/todos`, {
-          headers: { Authorization: `${user.value.token}` }
-        });
-        todos.value = data.data;
-      } catch (error) {
-        console.error('取得待辦事項失敗:', error);
-      }
-    }
-
-    // 新增待辦事項
-    async function addTodo() {
+// 新增待辦事項
+async function addTodo() {
   try {
     const content = newTodoContent.value.trim();
     if (content.length === 0) {
@@ -154,73 +154,53 @@ export default {
   }
 }
 
-    // 切換待辦事項狀態
-    async function toggleTodoStatus(todo) {
-      try {
-        await axios.patch(`${api}/todos/${todo.id}/toggle`, {}, {
-          headers: { Authorization: `${user.value.token}` }
-        });
-        getTodos(); // 刷新列表
-      } catch (error) {
-        console.error('切換狀態失敗:', error);
-      }
-    }
-
-    // 刪除待辦事項
-    async function deleteTodo(todo) {
-      try {
-        await axios.delete(`${api}/todos/${todo.id}`, {
-          headers: { Authorization: `${user.value.token}` }
-        });
-        getTodos(); // 刷新列表
-      } catch (error) {
-        console.error('刪除待辦事項失敗:', error);
-      }
-    }
-
-    // 編輯待辦事項
-    function editTodoStart(todo) {
-      edittingTodo.value = todo;
-      edittingContent.value = todo.content;
-    }
-
-    async function saveEdit(todo) {
-      try {
-        if (todo.content === edittingContent.value) {
-          edittingTodo.value = null; // 清空編輯狀態
-          return;
-        }
-        await axios.put(`${api}/todos/${todo.id}`, { content: edittingContent.value }, {
-          headers: { Authorization: `${user.value.token}` }
-        });
-        edittingTodo.value = null; // 清空編輯狀態
-        getTodos(); // 刷新列表
-      } catch (error) {
-        console.error('保存編輯失敗:', error);
-      }
-    }
-
-    function isEditing(todo) {
-      return edittingTodo.value && edittingTodo.value.id === todo.id;
-    }
-
-    return {
-      user,
-      todos,
-      newTodoContent,
-      currentTab,
-      filteredTodos,
-      todoCount,
-      switchTab,
-      addTodo,
-      toggleTodoStatus,
-      deleteTodo,
-      editTodoStart,
-      saveEdit,
-      isEditing,
-      logout
-    };
+// 切換待辦事項狀態
+async function toggleTodoStatus(todo) {
+  try {
+    await axios.patch(`${api}/todos/${todo.id}/toggle`, {}, {
+      headers: { Authorization: `${user.value.token}` }
+    });
+    getTodos(); // 刷新列表
+  } catch (error) {
+    console.error('切換狀態失敗:', error);
   }
-};
-</script>
+}
 
+// 刪除待辦事項
+async function deleteTodo(todo) {
+  try {
+    await axios.delete(`${api}/todos/${todo.id}`, {
+      headers: { Authorization: `${user.value.token}` }
+    });
+    getTodos(); // 刷新列表
+  } catch (error) {
+    console.error('刪除待辦事項失敗:', error);
+  }
+}
+
+// 編輯待辦事項
+function editTodoStart(todo) {
+  edittingTodo.value = todo;
+  edittingContent.value = todo.content;
+}
+
+async function saveEdit(todo) {
+  try {
+    if (todo.content === edittingContent.value) {
+      edittingTodo.value = null; // 清空編輯狀態
+      return;
+    }
+    await axios.put(`${api}/todos/${todo.id}`, { content: edittingContent.value }, {
+      headers: { Authorization: `${user.value.token}` }
+    });
+    edittingTodo.value = null; // 清空編輯狀態
+    getTodos(); // 刷新列表
+  } catch (error) {
+    console.error('保存編輯失敗:', error);
+  }
+}
+
+function isEditing(todo) {
+  return edittingTodo.value && edittingTodo.value.id === todo.id;
+}
+</script>
