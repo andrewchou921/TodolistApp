@@ -1,16 +1,65 @@
+<template>
+  <!-- 代辦事項頁面 -->
+  <div id="todoListPage" class="bg-half">
+    <nav>
+      <h1><a href="#">ONLINE TODO LIST</a></h1>
+      <ul>
+        <li class="todo_sm"><a href="#"><span>{{ user.nickname }}的代辦</span></a></li>
+        <li><a href="#loginPage" @click.prevent="logout">登出</a></li>
+      </ul>
+    </nav>
+    <div class="container todoListPage vhContainer">
+      <div class="todoList_Content">
+        <div class="inputBox">
+          <input type="text" placeholder="請輸入待辦事項" v-model="newTodoContent">
+          <a href="#" @click.prevent="addTodo">
+            <i class="fa fa-plus"></i>
+          </a>
+        </div>
+        <div class="todoList_list">
+          <ul class="todoList_tab">
+            <li><a href="#" :class="{ active: currentTab === 'all' }" @click.prevent="switchTab('all')">全部</a></li>
+            <li><a href="#" :class="{ active: currentTab === 'todo' }" @click.prevent="switchTab('todo')">待完成</a></li>
+            <li><a href="#" :class="{ active: currentTab === 'done' }" @click.prevent="switchTab('done')">已完成</a></li>
+          </ul>
+          <div class="todoList_items">
+            <ul class="todoList_item">
+              <li v-for="todo in filteredTodos" :key="todo.id">
+                <label class="todoList_label">
+                  <input class="todoList_input" type="checkbox" v-model="todo.status" @change="toggleTodoStatus(todo)">
+                  <span>{{ todo.content }}</span>
+                </label>
+                <a href="#" @click.prevent="deleteTodo(todo)">
+                  <i class="fa-solid fa-trash-can fa-lg"></i>
+                </a>
+              </li>
+            </ul>
+            <div class="todoList_statistics">
+              <p v-if="todos.length === 0">目前尚無待辦事項</p>
+              <p v-if="todos.length > 0">{{ todoCount }} 個未完成項目</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
 <script>
 import axios from 'axios';
 import { onMounted, ref, computed } from 'vue';
+import { useRouter } from 'vue-router'; // 引入 router
 
+const router = useRouter(); // 使用 useRouter
 const api = 'https://todolist-api.hexschool.io';
 
 export default {
   setup() {
     // 用戶資訊
-    const user = ref({ nickname: '', uid: '' });
+    const user = ref({ nickname: '', uid: '', token: '' });
 
- // 驗證登入狀態
- onMounted(async () => {
+    // 驗證登入狀態
+    onMounted(async () => {
       const token = document.cookie.replace(/(?:(?:^|.*;\s*)customTodoToken\s*\=\s*([^;]*).*$)|^.*$/, '$1');
       if (token) {
         try {
@@ -19,14 +68,15 @@ export default {
           });
           user.value = res.data;
           user.value.token = token;
-          console.log('登入成功:', user.value); // 在這裡打印成功信息
-          // getTodos(); // 取得待辦事項
+          console.log('登入成功:', user.value); // 打印成功信息
+          getTodos(); // 取得待辦事項
         } catch (error) {
           console.error('用戶驗證失敗:', error);
-  
+          document.cookie = 'customTodoToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+          window.location.href = '/login';
         }
       } else {
-        window.location.href = '/';
+        window.location.href = '/login';
       }
     });
 
@@ -42,9 +92,6 @@ export default {
         console.error('登出失敗:', error);
       }
     }
-
-
-
 
     // 當前待辦事項
     const todos = ref([]);
@@ -78,7 +125,7 @@ export default {
     async function getTodos() {
       try {
         const { data } = await axios.get(`${api}/todos`, {
-          headers: { Authorization: `Bearer ${user.value.token}` }
+          headers: { Authorization: `${user.value.token}` }
         });
         todos.value = data.data;
       } catch (error) {
@@ -88,26 +135,30 @@ export default {
 
     // 新增待辦事項
     async function addTodo() {
-      try {
-        const content = newTodoContent.value.trim();
-        if (content.length === 0) {
-          return alert('Todo內容不能為空白');
-        }
-        await axios.post(`${api}/todos`, { content }, {
-          headers: { Authorization: `Bearer ${user.value.token}` }
-        });
-        newTodoContent.value = ''; // 清空輸入框
-        getTodos(); // 刷新列表
-      } catch (error) {
-        console.error('新增待辦事項失敗:', error);
-      }
+  try {
+    const content = newTodoContent.value.trim();
+    if (content.length === 0) {
+      return alert('Todo內容不能為空白');
     }
+    if (!user.value.token) {
+      return alert('未獲得授權，請重新登入');
+    }
+    await axios.post(`${api}/todos`, { content }, {
+      headers: { Authorization: ` ${user.value.token}` }
+    });
+    newTodoContent.value = ''; // 清空輸入框
+    getTodos(); // 刷新列表
+  } catch (error) {
+    console.error('新增待辦事項失敗:', error.response?.data || error.message);
+    alert('新增待辦事項失敗，請檢查輸入內容或重新登入');
+  }
+}
 
     // 切換待辦事項狀態
     async function toggleTodoStatus(todo) {
       try {
         await axios.patch(`${api}/todos/${todo.id}/toggle`, {}, {
-          headers: { Authorization: `Bearer ${user.value.token}` }
+          headers: { Authorization: `${user.value.token}` }
         });
         getTodos(); // 刷新列表
       } catch (error) {
@@ -119,7 +170,7 @@ export default {
     async function deleteTodo(todo) {
       try {
         await axios.delete(`${api}/todos/${todo.id}`, {
-          headers: { Authorization: `Bearer ${user.value.token}` }
+          headers: { Authorization: `${user.value.token}` }
         });
         getTodos(); // 刷新列表
       } catch (error) {
@@ -140,7 +191,7 @@ export default {
           return;
         }
         await axios.put(`${api}/todos/${todo.id}`, { content: edittingContent.value }, {
-          headers: { Authorization: `Bearer ${user.value.token}` }
+          headers: { Authorization: `${user.value.token}` }
         });
         edittingTodo.value = null; // 清空編輯狀態
         getTodos(); // 刷新列表
@@ -153,7 +204,6 @@ export default {
       return edittingTodo.value && edittingTodo.value.id === todo.id;
     }
 
-  
     return {
       user,
       todos,
@@ -173,52 +223,4 @@ export default {
   }
 };
 </script>
-
-
-
-<template>
-    <!-- 代辦事項頁面 -->
-    <div id="todoListPage" class="bg-half">
-  <nav>
-    <h1><a href="#">ONLINE TODO LIST</a></h1>
-    <ul>
-      <li class="todo_sm"><a href="#"><span>{{ user.nickname }}的代辦</span></a></li>
-      <li><a href="#loginPage" @click.prevent="logout">登出</a></li>
-    </ul>
-  </nav>
-  <div class="conatiner todoListPage vhContainer">
-    <div class="todoList_Content">
-      <div class="inputBox">
-        <input type="text" placeholder="請輸入待辦事項">
-        <a href="#">
-          <i class="fa fa-plus"></i>
-        </a>
-      </div>
-      <div class="todoList_list">
-        <ul class="todoList_tab">
-          <li><a href="#" class="active">全部</a></li>
-          <li><a href="#">待完成</a></li>
-          <li><a href="#">已完成</a></li>
-        </ul>
-        <div class="todoList_items">
-          <ul class="todoList_item">
-            <li v-for="todo in todos" :key="todo.id">
-              <label class="todoList_label">
-                <input class="todoList_input" type="checkbox" value="true">
-                <span>{{ todo.content }}</span>
-              </label>
-              <a href="#">
-                <i class="fa fa-times"></i>
-              </a>
-            </li>
-          </ul>
-          <div class="todoList_statistics">
-            <p>{{ todos.length }} 個項目</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-</template>
 

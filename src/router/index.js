@@ -1,13 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/homeView.vue'
+import LoginFormView from '../views/loginformView.vue' // 將主頁改為登入頁面
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: HomeView // 這裡應該直接引用 Vue 組件
+      name: 'login',
+      component: LoginFormView // 將首頁組件改為登入頁面
     },
     {
       path: '/login',
