@@ -19,7 +19,8 @@
    font-size: 100%;
    font: inherit;
    vertical-align: baseline;
-   font-family: "Noto Sans TC", sans-serif;
+   font-family: "Noto Sans TC", "PingFang TC", "Heiti TC", "Apple LiGothic", "Arial", sans-serif;
+
  }
  
  
