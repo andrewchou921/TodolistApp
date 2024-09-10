@@ -211,7 +211,11 @@
  
  @media (max-width: 576px) {
    .d-m-n {
-     display: none;
+     display: block;
+     width: 70%;
+     margin: auto;
+     margin-bottom: 10px;
+
    }
  }
  
@@ -369,6 +373,10 @@
      -ms-flex-pack: start;
          justify-content: start;
    }
+   /* 針對註冊頁面的圖片隱藏 */
+  .signUpImage {
+    display: none;
+  }
  }
  
  .todoListPage {
