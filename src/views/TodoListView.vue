@@ -16,22 +16,36 @@
             <i class="fa fa-plus"></i>
           </a>
         </div>
+        <!-- 選單 -->
         <div class="todoList_list">
           <ul class="todoList_tab">
             <li><a href="#" :class="{ active: currentTab === 'all' }" @click.prevent="switchTab('all')">全部</a></li>
             <li><a href="#" :class="{ active: currentTab === 'todo' }" @click.prevent="switchTab('todo')">待完成</a></li>
             <li><a href="#" :class="{ active: currentTab === 'done' }" @click.prevent="switchTab('done')">已完成</a></li>
           </ul>
+          <!-- todo內容 -->
           <div class="todoList_items">
             <ul class="todoList_item">
               <li v-for="todo in filteredTodos" :key="todo.id">
-                <label class="todoList_label">
+                <!-- 編輯待辦事項 -->
+                <div v-if="isEditing(todo)">
+                  <input class="inputBox" v-model="edittingContent" @keyup.enter="saveEdit(todo)" />
+                  <button @click="saveEdit(todo)" class="formControls_btnSubmit">保存</button>
+                  <button @click="cancelEdit">取消</button>
+                </div>
+
+                <template v-else>
+                 <label class="todoList_label">
                   <input class="todoList_input" type="checkbox" v-model="todo.status" @change="toggleTodoStatus(todo)">
                   <span>{{ todo.content }}</span>
-                </label>
-                <a href="#" @click.prevent="deleteTodo(todo)">
-                  <i class="fa-solid fa-trash-can fa-lg"></i>
-                </a>
+                 </label>
+                  <a href="#" @click.prevent="editTodoStart(todo)">
+                     <i class="fa-solid fa-pen-to-square fa-lg"></i>
+                   </a>
+                  <a href="#" @click.prevent="deleteTodo(todo)">
+                    <i class="fa-solid fa-trash-can fa-lg"></i>
+                  </a>
+                </template>
               </li>
             </ul>
             <div class="todoList_statistics">
@@ -178,14 +192,15 @@ async function deleteTodo(todo) {
   }
 }
 
-// 編輯待辦事項
 function editTodoStart(todo) {
-  edittingTodo.value = todo;
-  edittingContent.value = todo.content;
+  edittingTodo.value = todo;          // 設置當前正在編輯的待辦事項
+  edittingContent.value = todo.content; // 將待辦事項內容放入編輯框
 }
+
 
 async function saveEdit(todo) {
   try {
+     // 如果內容沒有改變，退出編輯模式
     if (todo.content === edittingContent.value) {
       edittingTodo.value = null; // 清空編輯狀態
       return;
