@@ -42,6 +42,7 @@
   const signup = async () => {
     if (signupField.value.password !== signupField.value.passwordConfirm) {
       console.error('密碼和確認密碼不一致');
+      alert('密碼和確認密碼不一致');
       return;
     }
   

@@ -29,9 +29,9 @@
               <li v-for="todo in filteredTodos" :key="todo.id">
                 <!-- 編輯待辦事項 -->
                 <div v-if="isEditing(todo)">
-                  <input class="inputBox" v-model="edittingContent" @keyup.enter="saveEdit(todo)" />
-                  <button @click="saveEdit(todo)" class="formControls_btnSubmit">保存</button>
-                  <button @click="cancelEdit">取消</button>
+                  <input class="inputEditing"  v-model="edittingContent" @keyup.enter="saveEdit(todo)" />
+                  <button class="btn" @click="saveEdit(todo)">保存</button>
+                  <button class="btn" @click="cancelEdit">取消</button>
                 </div>
 
                 <template v-else>
@@ -113,6 +113,8 @@ const newTodoContent = ref('');
 const currentTab = ref('all');
 const edittingTodo = ref(null);
 const edittingContent = ref('');
+const originalContent = ref(''); // 定義 originalContent 為 ref
+
 
 // 篩選待辦事項
 const filteredTodos = computed(() => {
@@ -192,9 +194,18 @@ async function deleteTodo(todo) {
   }
 }
 
+
+// 編輯
 function editTodoStart(todo) {
-  edittingTodo.value = todo;          // 設置當前正在編輯的待辦事項
-  edittingContent.value = todo.content; // 將待辦事項內容放入編輯框
+  edittingTodo.value = todo;               // 設定當前正在編輯的待辦事項
+  edittingContent.value = todo.content;    // 將待辦事項的內容存到編輯框
+  originalContent = todo.content;          // 記住原本的內容，方便取消編輯時恢復
+}
+
+// 取消編輯
+function cancelEdit() {
+  edittingTodo.value = null; // 直接清空編輯狀態
+  edittingContent.value = ''; // 清空編輯框
 }
 
 

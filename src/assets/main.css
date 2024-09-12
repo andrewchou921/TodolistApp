@@ -409,6 +409,15 @@
            box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.15);
  }
  
+ .inputEditing {
+  width: 100%;
+  display: flex; /* 使用 Flexbox */
+  align-items: center; /* 垂直居中 */
+  position: relative;
+  margin-bottom: 16px;
+}
+ 
+
  .inputBox input {
    background: #fff;
    border: none;
@@ -552,6 +561,14 @@
    color: #9F9A91;
    font-size: 0.875rem;
    text-decoration: none;
+ }
+
+ .btn{
+  background: #333333;
+  border: none;
+  color: #fff;
+  margin-right: 2px;
+  border-radius: 5px;
  }
  /*# sourceMappingURL=all.css.map */
 
