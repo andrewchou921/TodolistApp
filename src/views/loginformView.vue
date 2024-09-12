@@ -11,11 +11,14 @@
       </div>
       <div>
         <form class="formControls" @submit.prevent="signIn">
-          <h2 class="formControls_txt">最實用的線上代辦事項服務</h2>
+          <h2 class="formControls_txt">最實用的線上待辦事項服務</h2>
           <label class="formControls_label" for="email">Email</label>
           <input class="formControls_input" type="text" id="email" name="email" placeholder="請輸入 email" required v-model="signInField.email"/>
           <label class="formControls_label" for="pwd">密碼</label>
-          <input class="formControls_input" type="password" id="pwd" name="pwd" placeholder="請輸入密碼" required v-model="signInField.password"/>
+          <input class="formControls_input password-input" :type="isPasswordVisible ? 'text' : 'password'"  id="pwd" name="pwd" placeholder="請輸入密碼" required v-model="signInField.password"/>
+          <button type="button" class="password-toggle-button" @click="togglePasswordVisibility">
+            <i :class="isPasswordVisible ? 'fa fa-eye' : 'fa fa-eye-slash'"></i>
+           </button>
           <input class="formControls_btnSubmit" type="submit" value="登入"/>
           <router-link to="/register" class="formControls_btnLink">註冊帳號</router-link>
         </form>
@@ -36,6 +39,15 @@ const signInField = ref({
   email: '',
   password: ''
 });
+
+
+// 顯示密碼
+const isPasswordVisible = ref(false);
+
+const togglePasswordVisibility = () => {
+  isPasswordVisible.value = !isPasswordVisible.value;
+};
+
 
 const signIn = async () => {
   try {

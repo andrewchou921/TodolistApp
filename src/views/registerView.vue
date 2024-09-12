@@ -14,9 +14,15 @@
             <label class="formControls_label" for="name">您的暱稱</label>
             <input class="formControls_input" type="text" id="name" name="nickname" placeholder="請輸入您的暱稱" v-model="signupField.nickname" />
             <label class="formControls_label" for="password">密碼</label>
-            <input class="formControls_input" type="password" id="password" name="password" placeholder="請輸入密碼" required v-model="signupField.password"/>
+            <input class="formControls_input" :type="isPasswordVisible ? 'text' : 'password'"  id="password" name="password" placeholder="請輸入密碼" required v-model="signupField.password"/>
+            <button type="button" class="password-toggle-button" @click="togglePasswordVisibility('password')">
+              <i :class="isPasswordVisible ? 'fa fa-eye' : 'fa fa-eye-slash'"></i>
+            </button>
             <label class="formControls_label" for="passwordConfirm">再次輸入密碼</label>
-            <input class="formControls_input" type="password" id="passwordConfirm" name="passwordConfirm" placeholder="請再次輸入密碼" required v-model="signupField.passwordConfirm"/>
+            <input class="formControls_input"  :type="isPasswordVisible === 'passwordConfirm' ? 'text' : 'password'"  id="passwordConfirm" name="passwordConfirm" placeholder="請再次輸入密碼" required v-model="signupField.passwordConfirm"/>
+            <button type="button" class="password-toggle-button" @click="togglePasswordVisibility('passwordConfirm')">
+              <i :class="isPasswordVisible ? 'fa fa-eye' : 'fa fa-eye-slash'"></i>
+            </button>
             <input class="formControls_btnSubmit" type="submit" value="註冊帳號"/>
             <router-link to="/login" class="formControls_btnLink">登入</router-link>
           </form>
@@ -39,6 +45,16 @@
     passwordConfirm: ''
   });
   
+  
+  const isPasswordVisible = ref({
+  password: false,
+  passwordConfirm: false
+  });
+
+  const togglePasswordVisibility = (field) => {
+  isPasswordVisible.value[field] = !isPasswordVisible.value[field];
+ };
+
   const signup = async () => {
     if (signupField.value.password !== signupField.value.passwordConfirm) {
       console.error('密碼和確認密碼不一致');
