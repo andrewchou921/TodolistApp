@@ -20,7 +20,7 @@
             <i :class="isPasswordVisible ? 'fa fa-eye' : 'fa fa-eye-slash'"></i>
            </button>
           <input class="formControls_btnSubmit" type="submit" value="登入"/>
-          <router-link to="/register" class="formControls_btnLink">註冊帳號</router-link>
+          <router-link to="/register" class="formControls_btnLink">還沒有帳號？立即註冊</router-link>
         </form>
       </div>
     </div>
